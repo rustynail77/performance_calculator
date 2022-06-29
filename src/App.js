@@ -1,24 +1,44 @@
-import logo from './logo.svg';
+import dataParser from './controllers/dataParser';
+import React, {useState, useEffect, createContext} from 'react';
 import './App.css';
+import InputForm from './components/InputForm';
+
+export const AppContext = createContext(null);
 
 function App() {
+  
+  const [propData, setPropData] = useState([]);
+  const [predictions, setPredictions] = useState({});
+  const [chartInfo, setChartInfo] = useState();
+  
+  useEffect (()=> {
+    const getPropData = async () => {
+      const data = await dataParser();
+      const sortedData = data.sort();
+      setPropData(sortedData);
+    }
+    getPropData();
+  },[])
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppContext.Provider value={{
+        propData, setPropData,
+        predictions, setPredictions,
+        chartInfo, setChartInfo
+        }}>
+      <div className="App">
+        <header>
+          <h1>Annual Performance Calculator</h1>
+          by RustyNail77
+        </header>
+        {
+          (propData.length===0)?<>Loading</>:
+          <>
+            <InputForm />
+          </>
+        }
+      </div>
+    </AppContext.Provider>
   );
 }
 
