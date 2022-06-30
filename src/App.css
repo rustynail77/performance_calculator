@@ -34,3 +34,15 @@ header {
 h1 {
   margin-bottom: 0;
 }
+
+form {
+  border: 1px solid gray;
+  margin: 10px 30px 0px 30px;
+  border-radius: 100px;
+  padding: 10px 0px 10px 0px;
+  background-color:rgb(186, 186, 147);
+}
+
+button {
+  margin: 10px;
+}

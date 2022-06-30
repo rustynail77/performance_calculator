@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {AppContext} from '../App';
 import AnnualPerformance from './AnnualPerformance';
+import sortCurrMonth from '../controllers/sortCurrMonth';
 
 const InputForm = () => {
 
@@ -8,8 +9,8 @@ const InputForm = () => {
     const [propIds, setPropIds] = useState([]);
     const [currPropId, setCurrPropId] = useState('2096999');
     const [loanType, setLoanType] = useState('normal');
-    const {predictions, setPredictions} = useContext(AppContext);
-    
+    const { chartInfo, setChartInfo,
+            predictions, setPredictions} = useContext(AppContext);
     const currMonth = new Date().getMonth()+1;
     
     useEffect(() =>{
@@ -50,31 +51,47 @@ const InputForm = () => {
         const income = {};
         const expenses = {};
         const multiplier = (multiply_perf===0)? 1 : 1+multiply_perf/100;
-
-        const start = (loan_start+currMonth>12)?currMonth+loan_start-12:currMonth + loan_start;
-        const end = (loan_start+currMonth+loan_duration>12)
-                    ?currMonth+loan_start+loan_duration-12
-                    :currMonth + loan_start + loan_duration;
-
+        
+        let y = currMonth;
         for (let i=1; i<13; i++) {
+            
             const monthly = relevData.filter(single=>Number(single.month)===i);
             let sum=0;
-            
             monthly.forEach(element =>sum+=returnMonthlyRevenue(element));
             const monthlyAvg = sum/Number(monthly.length);
             income[i] = parseInt(monthlyAvg*multiplier);
             
-            if (start<end) {
-                expenses[i] = (i>=start && i<end) 
-                                ? parseInt(monthlyExp*multiplier) : 0;
-            } else {
-                expenses[i] = ((i>=start && i<=12) || (i>=1 && i<end)) 
-                                ? parseInt(monthlyExp*multiplier) : 0;
-            }
+            
+            let expense = (i>loan_start && i<loan_start+loan_duration) ? parseInt(monthlyExp*multiplier) : 0;
+            expenses[y] = expense;
+            y++;
+            if (y===13) y=1;
         }
-        let tempPred = {...predictions};
-        tempPred[currPropId] = {income : income, expenses : expenses};
-        setPredictions(tempPred);
+        let tempPreds = {...predictions};
+        const property = {income : income, expenses : expenses};
+        tempPreds[currPropId] = property;
+        setPredictions(tempPreds);
+
+        const chartIncome = [];
+        const chartExpenses = [];
+        const chartPerformance = [];
+        const base = sortCurrMonth(property.income);
+
+        for (let i=0; i<base.length; i++) {
+            let theMonth = Number(base[i][0]);
+            let monthIncome = base[i][1];
+            let monthExpenses = property.expenses[theMonth];
+            let monthPerformance = monthIncome + monthExpenses;
+            chartIncome.push([theMonth,monthIncome]);
+            chartExpenses.push([theMonth, monthExpenses]);
+            chartPerformance.push([theMonth, monthPerformance]);
+        }
+        const result = {income:chartIncome, expenses:chartExpenses,performance:chartPerformance};
+        
+        console.log('created chartInfo:', result);
+        
+        setChartInfo({...result});
+
     }
 
     const handleSubmit = (e) => {

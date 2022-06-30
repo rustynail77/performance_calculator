@@ -11,6 +11,8 @@ const MyChart = () => {
   const [expenses, setExpenses] = useState(chartInfo.expenses);
   const [performance, setPerformance] = useState(chartInfo.performance);
 
+  console.log('datot:',income,expenses,performance);
+
   useEffect (()=>{
     setIncome(chartInfo.income);
     setExpenses(chartInfo.expenses);
